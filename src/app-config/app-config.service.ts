@@ -1,8 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()
-export class AppConfigService {
+export class AppConfigService implements OnModuleInit {
   readonly port: number;
   readonly provider_id: string;
   readonly ollama_host: string;
@@ -13,6 +13,10 @@ export class AppConfigService {
     this.provider_id = configService.get<string>('app.provider_id');
     this.ollama_host = configService.get<string>('app.ollama_host');
     this.hub = new HubConfig(configService);
+  }
+
+  onModuleInit() {
+    console.log(this);
   }
 }
 

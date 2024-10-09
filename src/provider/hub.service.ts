@@ -4,7 +4,7 @@ import Logger, { LogLevel, StreamHandler, formatting } from '@matrixai/logger';
 import * as testsUtils from './utils';
 import { AppConfigService } from 'src/app-config/app-config.service';
 import { HubMessage, HubMessageType, ProviderInfo, ProviderType } from './hub.dto';
-import { OllamaService } from './ollama/ollama.service';
+import { OllamaService } from './ollama.service';
 
 @Injectable()
 export class HubService implements OnModuleInit {

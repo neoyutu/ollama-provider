@@ -1,5 +1,5 @@
 import { Controller, Get } from '@nestjs/common';
-import { OllamaService } from './ollama/ollama.service';
+import { OllamaService } from './ollama.service';
 import { ModelResponse } from 'ollama';
 
 @Controller('provider')

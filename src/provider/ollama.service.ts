@@ -10,6 +10,8 @@ export class OllamaService implements OnModuleInit {
   }
 
   async onModuleInit() {
+    console.log(this.appConfig);
+    
     this.client = new Ollama({
       host: this.appConfig.ollama_host
     })
