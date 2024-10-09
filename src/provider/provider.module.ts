@@ -11,12 +11,12 @@ import { AppConfigModule } from 'src/app-config/app-config.module';
   providers: [
     AppConfigService,
     OllamaService,
-    // ProviderService,
-    // HubService,
+    ProviderService,
+    HubService,
   ],
   exports: [
     OllamaService,
-    // ProviderService, 
+    ProviderService,
   ],
   controllers: [ProviderController],
 })

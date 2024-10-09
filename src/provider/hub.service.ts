@@ -44,7 +44,9 @@ export class HubService implements OnModuleInit {
 
     this.quicClient.connection.addEventListener(
       events.EventQUICConnectionStream.name,
-      this.handleConnectionStream
+      async (e: events.EventQUICConnectionStream) => {
+        await this.handleConnectionStream(this, e);
+      }
     );
   }
 
@@ -52,42 +54,43 @@ export class HubService implements OnModuleInit {
     return this.quicClient;
   }
 
-  async handleConnectionStream(e: events.EventQUICConnectionStream) {
+  async handleConnectionStream(thiz: HubService, e: events.EventQUICConnectionStream) {
     const conn = e.detail;
 
     const decoder = new TextDecoder('utf-8');
     for await (const encRes of conn.readable) {
-      setTimeout(async () => {
-        let res: HubMessage;
-        res = JSON.parse(decoder.decode(encRes));
-        await this.handleHubMessage(conn, res);
-      }, 0);
+      let res: HubMessage;
+      res = JSON.parse(decoder.decode(encRes));
+      this.handleHubMessage(this, conn, res);
     }
   }
 
-  async handleHubMessage(conn: QUICStream, msg: HubMessage) {
+  async handleHubMessage(thiz: HubService, conn: QUICStream, msg: HubMessage) {
     switch (msg.type) {
       case HubMessageType.ProviderInfoReq:
-        await this.handleProviderInfoReq(conn)
+        await thiz.handleProviderInfoReq(thiz, conn)
         break;
       default:
-        return;
+        break;
     }
   }
 
-  async handleProviderInfoReq(conn: QUICStream) {
-    const models = await this.ollamaService.getModels();
-    const providerInfo: ProviderInfo = {
-      providerId: this.appConfig.provider_id,
-      providerType: ProviderType.Ollama,
-      ollamaProviderDetail: {
-        models: models.map((modelRes) => modelRes.name),
+  async handleProviderInfoReq(thiz: HubService, conn: QUICStream) {
+    const models = await thiz.ollamaService.getModels();
+    const msg: HubMessage = {
+      type: HubMessageType.ProviderInfoRes,
+      providerInfoRes: {
+        providerType: ProviderType.Ollama,
+        providerId: this.appConfig.provider_id,
+        ollamaProviderDetail: {
+          models: models.map((modelRes) => modelRes.name),
+        }
       }
-    };
+    }
 
     const writer = conn.writable.getWriter();
     const encoder = new TextEncoder();
-    const encReq = encoder.encode(JSON.stringify(providerInfo));
+    const encReq = encoder.encode(JSON.stringify(msg));
     await writer.write(encReq)
   }
 }
