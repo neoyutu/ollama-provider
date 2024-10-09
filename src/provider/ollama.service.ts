@@ -14,6 +14,12 @@ export class OllamaService implements OnModuleInit {
     this.client = new Ollama({
       host: this.appConfig.ollama_host
     })
+
+    try {
+      await this.client.ps()
+    } catch (error) {
+      throw new Error(`Ollama backend is unreachable: ${error}`)
+    }
   }
 
   async getModels(): Promise<ModelResponse[]> {
