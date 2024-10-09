@@ -20,6 +20,7 @@ export class PromptService {
 
   constructor(
     private providerService: ProviderService,
+    private ollamaService: OllamaService,
   ) {
     // mock providers
     const provider: Provider = {
@@ -79,10 +80,10 @@ export class PromptService {
     // take the first
     let provider = providers[0];
     let response: string;
-    let totalTokenCount= 0;
+    let totalTokenCount = 0;
     switch (provider.model) {
       case ModelType.Qwen2_05b:
-        let chatService = new OllamaService();
+        let chatService = this.ollamaService;
         let content: ChatContent = {
           role: 'user',
           content: prompt,

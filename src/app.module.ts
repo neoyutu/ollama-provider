@@ -6,9 +6,8 @@ import * as yaml from 'yaml';
 import * as fs from 'fs';
 import { AppConfigService } from './app-config/app-config.service';
 import { AppConfigModule } from './app-config/app-config.module';
-import { PromptModule } from './prompt/prompt.module';
+// import { PromptModule } from './prompt/prompt.module';
 import { ProviderModule } from './provider/provider.module';
-import { HubModule } from './hub/hub.module';
 
 @Module({
   imports: [
@@ -22,9 +21,8 @@ import { HubModule } from './hub/hub.module';
       isGlobal: true,
     }),
     AppConfigModule,
-    PromptModule,
     ProviderModule,
-    HubModule,
+    // PromptModule,
   ],
   controllers: [AppController],
   providers: [AppService, AppConfigService],
