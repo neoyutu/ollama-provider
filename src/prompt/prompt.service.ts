@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ChatContent, ChatInfo, ModelType, NewChatResDto, UserChat } from './prompt.dto';
 import { ProviderService } from 'src/provider/provider.service';
-import { Provider } from 'src/provider/provider.dto';
+import { Provider } from 'src/provider/hub.dto';
 import { OllamaService } from 'src/provider/ollama/ollama.service';
 import { v4 as uuidv4 } from 'uuid';
 

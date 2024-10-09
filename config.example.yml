@@ -1,5 +1,8 @@
 app:
   port: 3001
+  provider_id: "provider#1"
+  ollama_host: "localhost:11434"
+  # ollama_host: "ollama:11434" # docker
   hub:
     host: localhost
     port: 4433
