@@ -1,6 +1,15 @@
-version: '3.8'
-
 services:
+  provider:
+    build: .
+    image: yadsendew/ollama_provider:latest
+    container_name: ollama_provider
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./config.yml:/usr/src/app/config.yml
+    depends_on:
+      - ollama
+
   ollama:
     image: ollama/ollama
     container_name: ollama
