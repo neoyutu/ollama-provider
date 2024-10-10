@@ -1,5 +1,3 @@
-import { ModelType } from "src/provider/prompt/prompt.dto";
-
 export class HubMessage {
   type: HubMessageType
 
@@ -70,5 +68,5 @@ export class OllamaChatRes {
 
 export class Provider {
   id: string;
-  model: ModelType;
+  model: string;
 }
