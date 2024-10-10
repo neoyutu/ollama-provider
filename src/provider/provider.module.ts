@@ -10,7 +10,6 @@ import { ChatgptService } from './chatgpt/chatgpt.service';
 @Module({
   providers: [
     AppConfigService,
-    ProviderService,
     {
       provide: 'SERVICE',
       useFactory: (
@@ -18,6 +17,7 @@ import { ChatgptService } from './chatgpt/chatgpt.service';
       ) => {
         switch (appConfig.providerType) {
           case ProviderType.Ollama:
+            console.log('ollama service');
             return new OllamaService(appConfig);
           case ProviderType.ChatGPT:
             return new ChatgptService(appConfig);
@@ -27,6 +27,7 @@ import { ChatgptService } from './chatgpt/chatgpt.service';
       },
       inject: [AppConfigService],
     },
+    ProviderService,
     HubService,
   ],
   exports: [

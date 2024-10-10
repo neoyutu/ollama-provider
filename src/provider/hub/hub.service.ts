@@ -16,12 +16,18 @@ export class HubService implements OnModuleInit {
 
   constructor(
     private appConfig: AppConfigService,
-    @Optional() private ollamaService: OllamaService,
-    @Optional() private chatgpt: ChatgptService,
+    @Optional()
+    private ollamaService: OllamaService,
+    @Optional()
+    private chatgpt: ChatgptService,
   ) {
+    console.log('ctor hub');
+    console.log(ollamaService);
   }
 
   async onModuleInit() {
+    console.log('init hub');
+    console.log(this.ollamaService);
     await this.setupQuic();
   }
 
