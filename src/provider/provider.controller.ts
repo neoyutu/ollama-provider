@@ -1,10 +1,11 @@
-import { Controller, Get } from '@nestjs/common';
-import { OllamaService } from './ollama.service';
+import { Controller, Get, Optional } from '@nestjs/common';
+import { OllamaService } from './ollama/ollama.service';
 import { ModelResponse } from 'ollama';
 
 @Controller('provider')
 export class ProviderController {
   constructor(
+    @Optional()
     private readonly ollamaService: OllamaService,
   ) { }
 

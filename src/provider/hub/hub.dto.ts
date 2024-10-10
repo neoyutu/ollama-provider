@@ -16,6 +16,7 @@ export class ProviderInfo {
   providerType: ProviderType
   providerId: string
   ollamaProviderDetail?: OllamaProviderDetail
+  chatgptProviderDetail?: OllamaProviderDetail
 }
 
 export enum ProviderType {
@@ -24,6 +25,10 @@ export enum ProviderType {
 }
 
 export class OllamaProviderDetail {
+  models: string[]
+}
+
+export class ChatgptProviderDetail {
   models: string[]
 }
 

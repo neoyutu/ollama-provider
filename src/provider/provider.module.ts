@@ -1,21 +1,35 @@
 import { Module } from '@nestjs/common';
 import { ProviderService } from './provider.service';
-import { ChatGptService } from './chatgpt/chatgpt.service';
-import { OllamaService } from './ollama.service';
-import { HubService } from './hub.service';
+import { HubService } from './hub/hub.service';
 import { AppConfigService } from 'src/app-config/app-config.service';
 import { ProviderController } from './provider.controller';
-import { AppConfigModule } from 'src/app-config/app-config.module';
+import { ProviderType } from './hub/hub.dto';
+import { OllamaService } from './ollama/ollama.service';
+import { ChatgptService } from './chatgpt/chatgpt.service';
 
 @Module({
   providers: [
     AppConfigService,
-    OllamaService,
     ProviderService,
+    {
+      provide: 'SERVICE',
+      useFactory: (
+        appConfig: AppConfigService,
+      ) => {
+        switch (appConfig.providerType) {
+          case ProviderType.Ollama:
+            return new OllamaService(appConfig);
+          case ProviderType.ChatGPT:
+            return new ChatgptService(appConfig);
+          default:
+            throw new Error('unsupported provider');
+        }
+      },
+      inject: [AppConfigService],
+    },
     HubService,
   ],
   exports: [
-    OllamaService,
     ProviderService,
   ],
   controllers: [ProviderController],

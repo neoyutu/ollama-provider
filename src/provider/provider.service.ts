@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ModelType } from 'src/prompt/prompt.dto';
-import { Provider } from './hub.dto';
+import { Provider } from './hub/hub.dto';
 
 @Injectable()
 export class ProviderService {

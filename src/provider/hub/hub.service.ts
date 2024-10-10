@@ -1,24 +1,31 @@
 import { ClientCryptoOps, events, QUICClient, QUICStream } from '@matrixai/quic';
-import { Injectable, Logger as NestLogger, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger as NestLogger, OnModuleInit, Optional } from '@nestjs/common';
 import Logger, { LogLevel, StreamHandler, formatting } from '@matrixai/logger';
-import * as testsUtils from './utils';
+import * as testsUtils from '../utils';
 import { AppConfigService } from 'src/app-config/app-config.service';
-import { HubMessage, HubMessageType, ProviderInfo, ProviderType } from './hub.dto';
-import { OllamaService } from './ollama.service';
+import { HubMessage, HubMessageType, ProviderType } from './hub.dto';
+import { OllamaService } from '../ollama/ollama.service';
+import { ChatgptService } from '../chatgpt/chatgpt.service';
 
 @Injectable()
 export class HubService implements OnModuleInit {
   private logger = new NestLogger(HubService.name)
-  private quicClient: QUICClient;
   private quicLogger: Logger;
+
+  quicClient: QUICClient;
 
   constructor(
     private appConfig: AppConfigService,
-    private ollamaService: OllamaService,
+    @Optional() private ollamaService: OllamaService,
+    @Optional() private chatgpt: ChatgptService,
   ) {
   }
 
   async onModuleInit() {
+    await this.setupQuic();
+  }
+
+  async setupQuic() {
     this.logger.log('Connecting to quic server');
     const clientCryptoOps: ClientCryptoOps = {
       randomBytes: testsUtils.randomBytes,
@@ -45,47 +52,63 @@ export class HubService implements OnModuleInit {
     this.quicClient.connection.addEventListener(
       events.EventQUICConnectionStream.name,
       async (e: events.EventQUICConnectionStream) => {
-        await this.handleConnectionStream(this, e);
+        this.handleConnectionStream.bind(this);
+        await this.handleConnectionStream(e);
       }
     );
   }
 
-  getClient() {
-    return this.quicClient;
-  }
-
-  async handleConnectionStream(thiz: HubService, e: events.EventQUICConnectionStream) {
+  async handleConnectionStream(e: events.EventQUICConnectionStream) {
     const conn = e.detail;
 
     const decoder = new TextDecoder('utf-8');
     for await (const encRes of conn.readable) {
       let res: HubMessage;
       res = JSON.parse(decoder.decode(encRes));
-      this.handleHubMessage(this, conn, res);
+      this.handleHubMessage(conn, res);
     }
   }
 
-  async handleHubMessage(thiz: HubService, conn: QUICStream, msg: HubMessage) {
+  async handleHubMessage(conn: QUICStream, msg: HubMessage) {
     switch (msg.type) {
       case HubMessageType.ProviderInfoReq:
-        await thiz.handleProviderInfoReq(thiz, conn)
+        await this.handleProviderInfoReq(conn)
         break;
       default:
         break;
     }
   }
 
-  async handleProviderInfoReq(thiz: HubService, conn: QUICStream) {
-    const models = await thiz.ollamaService.getModels();
-    const msg: HubMessage = {
-      type: HubMessageType.ProviderInfoRes,
-      providerInfoRes: {
-        providerType: ProviderType.Ollama,
-        providerId: this.appConfig.provider_id,
-        ollamaProviderDetail: {
-          models: models.map((modelRes) => modelRes.name),
+  async handleProviderInfoReq(conn: QUICStream) {
+    let msg: HubMessage;
+    switch (this.appConfig.providerType) {
+      case ProviderType.Ollama:
+        const models = await this.ollamaService.getModels();
+        msg = {
+          type: HubMessageType.ProviderInfoRes,
+          providerInfoRes: {
+            providerType: ProviderType.Ollama,
+            providerId: this.appConfig.providerId,
+            ollamaProviderDetail: {
+              models: models.map((modelRes) => modelRes.name),
+            }
+          }
         }
-      }
+        break;
+      case ProviderType.ChatGPT:
+        msg = {
+          type: HubMessageType.ProviderInfoRes,
+          providerInfoRes: {
+            providerType: ProviderType.ChatGPT,
+            providerId: this.appConfig.providerId,
+            chatgptProviderDetail: {
+              // TODO: get this?
+              models: [],
+            }
+          }
+        }
+      default:
+        throw new Error("unsupported provider type")
     }
 
     const writer = conn.writable.getWriter();

@@ -12,7 +12,7 @@ export class OllamaService implements OnModuleInit {
 
   async onModuleInit() {
     this.client = new Ollama({
-      host: this.appConfig.ollama_host
+      host: this.appConfig.ollama.ollama_host
     })
 
     try {
