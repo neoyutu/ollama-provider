@@ -19,5 +19,14 @@ services:
       - ollama:/root/.ollama
     restart: unless-stopped
 
+  ollama_ui:
+    image: yadsendewlung/nextjs-ollama-llm-ui
+    ports:
+      - "11433:3000"
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_OLLAMA_URL: 'http://localhost:11434'
+    volumes:
+      - ./.env:/app/.env
 volumes:
   ollama:
