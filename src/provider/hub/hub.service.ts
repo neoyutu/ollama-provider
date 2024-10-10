@@ -3,9 +3,10 @@ import { Inject, Injectable, Logger as NestLogger, OnApplicationShutdown, OnModu
 import Logger, { LogLevel, StreamHandler, formatting } from '@matrixai/logger';
 import * as testsUtils from '../utils';
 import { AppConfigService } from 'src/app-config/app-config.service';
-import { HubMessage, HubMessageType, ProviderType } from './hub.dto';
+import { HubMessage, HubMessageType, OllamaChatRes, ProviderType } from './hub.dto';
 import { OllamaService } from '../ollama/ollama.service';
 import { ChatgptService } from '../chatgpt/chatgpt.service';
+import { Message } from 'ollama';
 
 @Injectable()
 export class HubService implements OnModuleInit, OnApplicationShutdown {
@@ -81,6 +82,8 @@ export class HubService implements OnModuleInit, OnApplicationShutdown {
       case HubMessageType.ProviderInfoReq:
         await this.handleProviderInfoReq(conn)
         break;
+      case HubMessageType.ChatReq:
+        await this.handleChatReq(conn, msg)
       default:
         break;
     }
@@ -121,6 +124,34 @@ export class HubService implements OnModuleInit, OnApplicationShutdown {
     const writer = conn.writable.getWriter();
     const encoder = new TextEncoder();
     const encReq = encoder.encode(JSON.stringify(msg));
+    await writer.write(encReq)
+  }
+
+  async handleChatReq(conn: QUICStream, req: HubMessage) {
+    let res: HubMessage;
+    switch (this.appConfig.providerType) {
+      case ProviderType.Ollama:
+        const client = await (this.providerService as OllamaService).getClient();
+        const ollamaChatReq = req.ollamaChatReq;
+        const response: OllamaChatRes = await client.chat({
+          model: ollamaChatReq.model,
+          messages: ollamaChatReq.messages,
+          stream: false,
+        });
+        res = {
+          type: HubMessageType.ChatRes,
+          ollamaChatRes: response
+        }
+        break;
+      case ProviderType.ChatGPT:
+        break;
+      default:
+        throw new Error("unsupported provider type")
+    }
+
+    const writer = conn.writable.getWriter();
+    const encoder = new TextEncoder();
+    const encReq = encoder.encode(JSON.stringify(res));
     await writer.write(encReq)
   }
 }

@@ -6,6 +6,7 @@ import { ProviderController } from './provider.controller';
 import { ProviderType } from './hub/hub.dto';
 import { OllamaService } from './ollama/ollama.service';
 import { ChatgptService } from './chatgpt/chatgpt.service';
+import { PromptController } from './prompt/prompt.controller';
 
 @Module({
   providers: [

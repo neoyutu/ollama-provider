@@ -1,9 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { ChatContent, ChatInfo, ModelType, NewChatResDto, UserChat } from './prompt.dto';
 import { ProviderService } from 'src/provider/provider.service';
 import { Provider } from 'src/provider/hub/hub.dto';
 import { OllamaService } from 'src/provider/ollama/ollama.service';
 import { v4 as uuidv4 } from 'uuid';
+import { ChatgptService } from 'src/provider/chatgpt/chatgpt.service';
 
 const TOKEN_PRICE = 0.00000000000001;
 
@@ -20,14 +21,9 @@ export class PromptService {
 
   constructor(
     private providerService: ProviderService,
-    private ollamaService: OllamaService,
+    @Inject('PROVIDER_SERVICE')
+    private chatService?: OllamaService | ChatgptService,
   ) {
-    // mock providers
-    const provider: Provider = {
-      id: "hehe",
-      model: ModelType.Qwen2_05b,
-    };
-    this.providerService.registerProvider(provider)
   }
 
   async newChat(user_id: string, model: ModelType): Promise<NewChatResDto> {
@@ -81,27 +77,27 @@ export class PromptService {
     let provider = providers[0];
     let response: string;
     let totalTokenCount = 0;
-    switch (provider.model) {
-      case ModelType.Qwen2_05b:
-        let chatService = this.ollamaService;
-        let content: ChatContent = {
-          role: 'user',
-          content: prompt,
-        }
-        let res = await chatService.chat(provider.model, content, chatHistories);
-        response = res.message.content
-        totalTokenCount = res.prompt_eval_count + res.eval_count;
+    // switch (provider.model) {
+    //   case ModelType.Qwen2_05b:
+    //     let chatService = this.chatService as OllamaService;
+    //     let content: ChatContent = {
+    //       role: 'user',
+    //       content: prompt,
+    //     }
+    //     let res = await chatService.chat(provider.model, content, chatHistories);
+    //     response = res.message.content
+    //     totalTokenCount = res.prompt_eval_count + res.eval_count;
 
-        // save message to history
-        let assistantContent: ChatContent = {
-          role: 'assistant',
-          content: response,
-        }
-        this.chatHistories.set(chatId, [...chatHistories, content, assistantContent]);
-        break;
-      default:
-        break;
-    }
+    //     // save message to history
+    //     let assistantContent: ChatContent = {
+    //       role: 'assistant',
+    //       content: response,
+    //     }
+    //     this.chatHistories.set(chatId, [...chatHistories, content, assistantContent]);
+    //     break;
+    //   default:
+    //     break;
+    // }
 
     const tokenCount = this.calculateTokenCount(prompt);
     const tokenPrice = this.calculateTokenPrice(tokenCount);

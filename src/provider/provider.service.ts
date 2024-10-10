@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { ModelType } from 'src/prompt/prompt.dto';
+import { ModelType } from 'src/provider/prompt/prompt.dto';
 import { Provider } from './hub/hub.dto';
 
 @Injectable()

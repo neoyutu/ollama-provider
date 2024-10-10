@@ -1,7 +1,7 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { ModelResponse, Ollama } from 'ollama'
 import { AppConfigService } from 'src/app-config/app-config.service';
-import { ChatContent } from 'src/prompt/prompt.dto';
+import { ChatContent } from 'src/provider/prompt/prompt.dto';
 
 @Injectable()
 export class OllamaService implements OnModuleInit {
@@ -22,6 +22,10 @@ export class OllamaService implements OnModuleInit {
     }
   }
 
+  getClient(): Ollama {
+    return this.client
+  }
+
   async getModels(): Promise<ModelResponse[]> {
     const listResp = await this.client.list();
     return listResp.models
@@ -29,13 +33,5 @@ export class OllamaService implements OnModuleInit {
 
   async pullModel(model: string) {
     await this.client.pull({ model })
-  }
-
-  async chat(model: string, content: ChatContent, histories: ChatContent[]) {
-    const response = await this.client.chat({
-      model,
-      messages: [...histories, content],
-    });
-    return response
   }
 }

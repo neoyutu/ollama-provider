@@ -4,7 +4,9 @@ import { CreatePromptDto, ModelType, NewChatDto, NewChatResDto } from './prompt.
 
 @Controller('prompt')
 export class PromptController {
-  constructor(private readonly promptService: PromptService) { }
+  constructor(
+    private readonly promptService: PromptService
+  ) { }
 
   @Post('newChat')
   async newChat(@Body() body: NewChatDto): Promise<NewChatResDto> {
