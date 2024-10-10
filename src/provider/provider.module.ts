@@ -11,13 +11,12 @@ import { ChatgptService } from './chatgpt/chatgpt.service';
   providers: [
     AppConfigService,
     {
-      provide: 'SERVICE',
+      provide: 'PROVIDER_SERVICE',
       useFactory: (
         appConfig: AppConfigService,
       ) => {
         switch (appConfig.providerType) {
           case ProviderType.Ollama:
-            console.log('ollama service');
             return new OllamaService(appConfig);
           case ProviderType.ChatGPT:
             return new ChatgptService(appConfig);

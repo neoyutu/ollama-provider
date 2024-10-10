@@ -1,5 +1,5 @@
 import { ClientCryptoOps, events, QUICClient, QUICStream } from '@matrixai/quic';
-import { Injectable, Logger as NestLogger, OnModuleInit, Optional } from '@nestjs/common';
+import { Inject, Injectable, Logger as NestLogger, OnApplicationShutdown, OnModuleInit, Optional } from '@nestjs/common';
 import Logger, { LogLevel, StreamHandler, formatting } from '@matrixai/logger';
 import * as testsUtils from '../utils';
 import { AppConfigService } from 'src/app-config/app-config.service';
@@ -8,7 +8,7 @@ import { OllamaService } from '../ollama/ollama.service';
 import { ChatgptService } from '../chatgpt/chatgpt.service';
 
 @Injectable()
-export class HubService implements OnModuleInit {
+export class HubService implements OnModuleInit, OnApplicationShutdown {
   private logger = new NestLogger(HubService.name)
   private quicLogger: Logger;
 
@@ -16,18 +16,14 @@ export class HubService implements OnModuleInit {
 
   constructor(
     private appConfig: AppConfigService,
-    @Optional()
-    private ollamaService: OllamaService,
-    @Optional()
-    private chatgpt: ChatgptService,
+    @Inject('PROVIDER_SERVICE')
+    private providerService?: OllamaService | ChatgptService,
   ) {
-    console.log('ctor hub');
-    console.log(ollamaService);
   }
 
+
   async onModuleInit() {
-    console.log('init hub');
-    console.log(this.ollamaService);
+    console.log(this.providerService);
     await this.setupQuic();
   }
 
@@ -64,6 +60,11 @@ export class HubService implements OnModuleInit {
     );
   }
 
+  async onApplicationShutdown(signal?: string) {
+    this.logger.log('closing quic connection')
+    await this.quicClient.connection.stop();
+  }
+
   async handleConnectionStream(e: events.EventQUICConnectionStream) {
     const conn = e.detail;
 
@@ -89,7 +90,7 @@ export class HubService implements OnModuleInit {
     let msg: HubMessage;
     switch (this.appConfig.providerType) {
       case ProviderType.Ollama:
-        const models = await this.ollamaService.getModels();
+        const models = await (this.providerService as OllamaService).getModels();
         msg = {
           type: HubMessageType.ProviderInfoRes,
           providerInfoRes: {
