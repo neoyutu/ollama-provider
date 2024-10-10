@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { ModelType } from 'src/provider/prompt/prompt.dto';
 import { Provider } from './hub/hub.dto';
 
 @Injectable()
@@ -8,7 +7,7 @@ export class ProviderService {
   private providerMap: Map<string, Provider> = new Map();
 
   // Maps model type to an array of provider IDs
-  private modelProviderMap: Map<ModelType, string[]> = new Map();
+  private modelProviderMap: Map<string, string[]> = new Map();
 
   // Registers a provider
   registerProvider(provider: Provider) {
@@ -55,7 +54,7 @@ export class ProviderService {
     }
   }
 
-  findProvidersByModel(model: ModelType): Provider[] {
+  findProvidersByModel(model: string): Provider[] {
     // Get the list of provider IDs for the model
     const providerIds = this.modelProviderMap.get(model);
 
